@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>O2K_DGS Shop</title>
+    <style>
+        body { font-family: Arial; background: #9ACD32; margin: 0; padding: 0; }
+        header { background: #333; color: white; padding: 20px; text-align: center; }
+        button { padding: 10px; background: #28a745; color: white; border: none; font-size: 16px; }
+        button:hover { background: #218838; }
+        .cart { display: none; position: fixed; top: 0; right: 0; background: white; width: 300px; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>O2K_DGS</h1>
+    <button id="cart-btn" onclick="toggleCart()">Cart (0)</button>
+</header>
+
+<div id="product-list">
+    <div>
+        <h2>Electric - $24.99</h2>
+        <button onclick="addToCart('Electric', 24.99)">Add to Cart</button>
+    </div>
+    <div>
+        <h2>Manual - $29.99</h2>
+        <button onclick="addToCart('Manual', 29.99)">Add to Cart</button>
+    </div>
+    <div>
+        <h2>Other - $34.99</h2>
+        <button onclick="addToCart('Other', 34.99)">Add to Cart</button>
+    </div>
+</div>
+
+<div id="cart" class="cart">
+    <h2>Your Cart</h2>
+    <ul id="cart-items"></ul>
+    <p>Total: $<span id="total-price">0.00</span></p>
+    <button onclick="checkout()">Continue to Checkout</button>
+</div>
+
+<script>
+    let cart = [];
+    let totalPrice = 0;
+
+    function addToCart(productName, productPrice) {
+        cart.push({ name: productName, price: productPrice });
+        totalPrice += productPrice;
+        updateCartDisplay();
+    }
+
+    function updateCartDisplay() {
+        const cartItems = document.getElementById("cart-items");
+        cartItems.innerHTML = '';
+        cart.forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = `${item.name} - $${item.price.toFixed(2)}`;
+            cartItems.appendChild(li);
+        });
+        document.getElementById("total-price").textContent = totalPrice.toFixed(2);
+        document.getElementById("cart-btn").textContent = `Cart (${cart.length})`;
+    }
+
+    function toggleCart() {
+        const cartElement = document.getElementById("cart");
+        cartElement.style.display = cartElement.style.display === "block" ? "none" : "block";
+    }
+
+    async function checkout() {
+        if (cart.length === 0) {
+            alert("Cart is empty!");
+            return;
+        }
+
+        let message = "**🛒 NEW CHECKOUT ALERT**\n\n";
+        cart.forEach(item => {
+            message += `• ${item.name}: $${item.price.toFixed(2)}\n`;
+        });
+        message += `\n**Total:** $${totalPrice.toFixed(2)}`;
+        message += `\n**Time:** ${new Date().toLocaleString()}`;
+
+        // 🚨 Replace below URL with your backend server URL (where server.js runs)
+        await fetch('https://YOUR-BACKEND-URL/send-to-discord', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message })
+        });
+
+        alert("Order placed! Check your Discord.");
+
+        cart = [];
+        totalPrice = 0;
+        updateCartDisplay();
+        document.getElementById("cart").style.display = "none";
+    }
+</script>
+
+</body>
+</html>
